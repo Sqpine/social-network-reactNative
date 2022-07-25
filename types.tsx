@@ -24,19 +24,35 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> = Nati
     Screen>;
 
 export type RootTabParamList = {
-    Home: undefined;
-    Profile: { id: string | undefined } | undefined;
-    CreatePost: undefined;
-    Search: undefined;
+    Root: undefined
+    NotFound: undefined
+    Modal: undefined
+    Home: undefined
+    Profile: { id: string | undefined } | undefined
+    CreatePost: undefined
+    Search: undefined
     Save: {
         image: string
-    } | undefined;
+    } | undefined
     Post: {
-        caption: string,
+        likesCount: number
+        caption: string
         image: string
+        postId: string
+        userId: string
     },
-    EditProfile: undefined,
-    Following:undefined,
+    Comments: {
+        postId: string
+        userId: string
+    },
+    Messages: {
+        userName: string
+        chatID: string
+    },
+    ChoseUser: undefined
+    Chats: undefined
+    EditProfile: undefined
+    Following: undefined
 
 
 };

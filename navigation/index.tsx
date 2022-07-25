@@ -12,21 +12,27 @@ import UserNavigator from "./UserNavigator";
 import GuestNavigator from "./GuestNavigator";
 import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "../firebase";
+import {useDispatch} from "react-redux";
+import {GetFollowingUsers, GetUserThunk} from "../redux/reducers/user";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
     const [isFetching, setFetching] = useState(false);
     const [isLogged, setLogged] = useState(false);
+    const dispatch = useDispatch<any>()
     useEffect(() => {
         setFetching(true);
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 const uid = user.uid;
                 setLogged(true)
+                dispatch(GetUserThunk(uid))
+                dispatch(GetFollowingUsers(uid))
             } else {
                 setLogged(false)
             }
             setFetching(false)
         });
+
         return () => unsubscribe()
     }, [])
 

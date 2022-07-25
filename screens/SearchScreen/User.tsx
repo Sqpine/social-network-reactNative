@@ -1,24 +1,23 @@
-import {Button, Image, StyleSheet, TouchableOpacity} from "react-native";
+import {Image, StyleSheet, TouchableOpacity} from "react-native";
 import {Text, View} from "../../components/Themed";
 import * as React from "react";
-import {useNavigation} from "@react-navigation/native";
-import {NativeStackScreenProps} from "@react-navigation/native-stack";
-import {RootTabParamList} from "../../types";
 import FollowUnFollow from "../ProfileScreen/FollowUnFollow";
+import {auth} from "../../firebase";
 
 type PropsType = {
     id: string
     name: string
     email: string
-    uri:string
+    uri: string
+    onPressHandler: (id: string) => void
+    showFollow: boolean
 }
-const User: React.FC<PropsType> = ({id, name, uri,email}) => {
-    const navigation = useNavigation<NativeStackScreenProps<RootTabParamList, 'Search'>['navigation']>()
+const User: React.FC<PropsType> = ({id, onPressHandler, showFollow, name, uri, email}) => {
     return (
         <View key={id} style={styles.userContainer}>
             <TouchableOpacity
                 style={styles.user}
-                onPress={() => navigation.navigate('Profile', {id})}
+                onPress={() => onPressHandler(id)}
             >
                 <Image style={styles.avatar} source={uri ? ({uri}) : require('../../assets/images/noAvatar.png')}/>
                 <View style={styles.userInfo}>
@@ -30,7 +29,10 @@ const User: React.FC<PropsType> = ({id, name, uri,email}) => {
                     </Text>
                 </View>
             </TouchableOpacity>
-            <FollowUnFollow id={id}/>
+            {showFollow && id !== auth.currentUser!.uid
+                &&
+                <FollowUnFollow id={id}/>
+            }
         </View>
     )
 }

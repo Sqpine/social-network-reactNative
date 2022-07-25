@@ -4,13 +4,13 @@ import React, {useCallback} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {GetFollowingUsers, GetUserPosts, GetUserThunk, UserState} from "../../redux/reducers/user";
 import {RootState} from "../../redux/store";
-import Posts from "../Posts";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {RootTabParamList} from "../../types";
 import {auth} from "../../firebase";
 import {Feather} from '@expo/vector-icons';
 import {useFocusEffect} from "@react-navigation/native";
 import Profile from "./Profile";
+import Posts from "../PostScreen/Posts";
 
 type PropsType = {
     route: NativeStackScreenProps<RootTabParamList, 'Profile'>['route']
@@ -22,17 +22,13 @@ const ProfileScreen: React.FC<PropsType> = ({navigation, route}) => {
     const {user, isFetching, userPosts} = useSelector<RootState, UserState>(state => state.userState)
     useFocusEffect(
         useCallback(() => {
+            let id
             if (route.params!.id) {
-                const id = route.params!.id
-                dispatch(GetUserThunk(id))
-                dispatch(GetUserPosts(id))
-                dispatch(GetFollowingUsers(id))
-            } else {
-                const id = auth.currentUser!.uid
-                dispatch(GetUserThunk(id))
-                dispatch(GetUserPosts(id))
-                dispatch(GetFollowingUsers(id))
-            }
+                id = route.params!.id
+            } else id = auth.currentUser!.uid
+            dispatch(GetUserThunk(id))
+            dispatch(GetUserPosts(id))
+            dispatch(GetFollowingUsers(id))
         }, [route.params])
     )
 

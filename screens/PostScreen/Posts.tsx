@@ -1,12 +1,11 @@
-import React, {useEffect} from 'react';
-import {View} from "../components/Themed";
+import React from 'react';
+import {View} from "../../components/Themed";
 import {useDispatch, useSelector} from "react-redux";
-import {RootState} from "../redux/store";
-import {GetUserPosts, UserState} from "../redux/reducers/user";
+import {RootState} from "../../redux/store";
+import {UserState} from "../../redux/reducers/user";
 import Post from "./Post";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
-import {RootTabParamList} from "../types";
-import {auth} from "../firebase";
+import {RootTabParamList} from "../../types";
 
 type PropsType = {
     route: NativeStackScreenProps<RootTabParamList, 'Profile'>['route']
@@ -19,15 +18,24 @@ const Posts: React.FC<PropsType> = ({navigation, route}) => {
 
     return (
         <View style={{
-            display: 'flex', flexWrap: 'wrap',
+            display: 'flex',
+            flexWrap: 'wrap',
             justifyContent: 'center',
             flexDirection: 'row',
             marginHorizontal: 'auto',
-            flex: 3
+            flex: 3,
         }}>
             {userPosts?.map(
-                ({id, downloadURL, caption}) =>
-                    <Post navigation={navigation} key={id} id={id} url={downloadURL} caption={caption}/>
+                ({id, downloadURL, caption, likeCount}) =>
+                    <Post
+                        key={id}
+                        id={id}
+                        navigation={navigation}
+                        likesCount={likeCount}
+                        userId={user && user.id}
+                        url={downloadURL}
+                        caption={caption}
+                    />
             )}
         </View>
     );

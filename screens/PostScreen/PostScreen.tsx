@@ -1,22 +1,36 @@
 import React, {useState} from "react";
-import {Dimensions, Image, StyleSheet} from "react-native";
+import {Dimensions, Image, StyleSheet, TextInput, TouchableOpacity} from "react-native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
-import {RootTabParamList} from "../types";
-import {AntDesign} from '@expo/vector-icons';
-import {Text, View} from '../components/Themed';
+import {RootTabParamList} from "../../types";
+import {Text, View} from '../../components/Themed';
 import {useSelector} from "react-redux";
-import {RootState} from "../redux/store";
-import {UserState} from "../redux/reducers/user";
+import {RootState} from "../../redux/store";
+import {UserState} from "../../redux/reducers/user";
+import {collection, doc, setDoc} from "firebase/firestore";
+import {auth, db} from "../../firebase";
+import {useNavigation} from "@react-navigation/native";
+import LikeSystem from "../LikeSystem";
 
 type PropsType = {
     route: NativeStackScreenProps<RootTabParamList, 'Post'>['route']
 }
 const PostScreen: React.FC<PropsType> = ({route}) => {
-    const [isLiked, setLike] = useState(false)
+    const navigation = useNavigation<NativeStackScreenProps<RootTabParamList, 'Post'>['navigation']>()
+    const uid = auth.currentUser!.uid
+    const {postId, userId,likesCount} = route.params
+    const [comment, setComment] = useState('')
     const [isReadMore, setReadMore] = useState(false)
-    const {isFetching, user} = useSelector<RootState, UserState>(state => state.userState)
-    const like = () => {
-
+    const {user} = useSelector<RootState, UserState>(state => state.userState)
+    const leaveComment = async () => {
+        if (!comment.trim() && comment.length > 180) return
+        debugger
+        await setDoc(doc(collection(db, 'post', userId, 'userPosts', postId, 'comments')), {
+            creator: uid,
+            text: comment
+        })
+        debugger
+        setComment('')
+        navigation.navigate('Comments', {postId, userId})
     }
     return (
         <View style={styles.container}>
@@ -24,7 +38,7 @@ const PostScreen: React.FC<PropsType> = ({route}) => {
                 <View style={styles.header}>
                     <View style={styles.profile}>
                         <Image style={styles.avatar} resizeMode="cover"
-                               source={require('../assets/images/noAvatar.png')}/>
+                               source={require('../../assets/images/noAvatar.png')}/>
                         <Text style={styles.nameText}>{user!.name}</Text>
                     </View>
                     <Text style={styles.followText}>Follow</Text>
@@ -39,23 +53,29 @@ const PostScreen: React.FC<PropsType> = ({route}) => {
                     {isReadMore ?
                         <>
                             <Text>{route.params.caption}</Text>
-                            <Text style={styles.followText} onPress={()=>setReadMore(false)}>Read Less</Text>
+                            <Text style={styles.followText} onPress={() => setReadMore(false)}>Read Less</Text>
                         </>
                         :
                         <>
                             <Text numberOfLines={3}>{route.params.caption}</Text>
-                            <Text style={styles.followText} onPress={()=>setReadMore(true)}>Read More</Text>
+                            <Text style={styles.followText} onPress={() => setReadMore(true)}>Read More</Text>
                         </>
                     }
                 </View>
-                <View style={styles.footerLike}>
-                    {
-                        isLiked ?
-                            <AntDesign name="heart" size={24} color="red"/>
-                            :
-                            <AntDesign name="hearto" size={24} color="black"/>
-
-                    }
+                <LikeSystem likesCount={likesCount} postId={postId} userId={userId}/>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('Comments', {postId, userId})}
+                >
+                    <Text>
+                        Comment Screen
+                    </Text>
+                </TouchableOpacity>
+                <View>
+                    <TextInput value={comment}
+                               onChangeText={(t) => setComment(t)}
+                               onSubmitEditing={leaveComment}
+                               placeholder="Comment . . ."
+                    />
                 </View>
             </View>
         </View>
@@ -88,10 +108,11 @@ const styles = StyleSheet.create({
     },
     avatar: {
         borderRadius: 100,
-        width: screen.width * 0.1,
-        height: screen.width * 0.1,
+        width: 35,
+        height: 35,
     },
     image: {
+        maxHeight: 500,
         height: screen.width * 0.8,
     },
     footer: {

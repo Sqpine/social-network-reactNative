@@ -1,19 +1,22 @@
 import React from 'react';
-import {View} from "../components/Themed";
+import {View} from "../../components/Themed";
 import {Image, TouchableHighlight} from "react-native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
-import {RootTabParamList} from "../types";
-import {useNavigation} from "@react-navigation/native";
+import {RootTabParamList} from "../../types";
 
 type PropsType = {
     id: string
     url: string
     caption: string
-    navigation:NativeStackScreenProps<RootTabParamList, 'Profile'>['navigation']
+    userId: string | null
+    likesCount:number
+    navigation: NativeStackScreenProps<RootTabParamList, 'Profile'>['navigation']
 }
-const Post: React.FC<PropsType> = ({url, caption, id,navigation}) => {
+const Post: React.FC<PropsType> = ({url, caption,likesCount, userId, id, navigation}) => {
+
     const openPost = () => {
-        navigation.navigate('Post', {image: url,caption})
+        if (!userId) return
+        navigation.navigate('Post', {image: url, caption,likesCount, postId: id, userId})
     }
     return (
         <TouchableHighlight onPress={openPost} underlayColor="white">

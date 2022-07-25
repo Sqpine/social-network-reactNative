@@ -2,13 +2,17 @@ import {createAsyncThunk, createSlice, isAnyOf, PayloadAction} from '@reduxjs/to
 import {collection, doc, getDoc, getDocs, onSnapshot} from "firebase/firestore";
 import {auth, db} from "../../firebase";
 import firebase from "firebase/compat";
-
-export type EditInfoType = { name: string, bio: string, uri: string | null }
+export type EditInfoType = {
+    name: string
+    bio: string
+    uri: string | null
+}
 export type UsersPostsType = {
     id: string
     caption: string
     creation: firebase.firestore.FieldValue
     downloadURL: string
+    likeCount: number
 }
 // Define a type for the slice state
 export type UserState = {
@@ -18,6 +22,7 @@ export type UserState = {
     yourFollowedUsers: string[]
     editInfo: EditInfoType
     userPosts: UsersPostsType[] | null
+    postComments: CommentType[]
 }
 
 // Define the initial state using that type
@@ -27,6 +32,7 @@ const initialState: UserState = {
     yourFollowedUsers: [],
     editInfo: {name: '', bio: '', uri: null},
     userPosts: null,
+    postComments: [],
     isFetching: false
 }
 
@@ -65,6 +71,11 @@ export const userSlice = createSlice({
             (state, {payload}) => {
                 state.isFetching = false
             })
+        builder.addCase(GetPostComments.fulfilled,
+            (state, {payload}) => {
+                state.isFetching = false
+                state.postComments = payload
+            })
         builder.addCase(GetUserPosts.fulfilled,
             (state, {payload}) => {
 
@@ -80,7 +91,7 @@ export const userSlice = createSlice({
     }
 })
 
-export const {setEditName, setEditBio, setYourUsersFollowed,setFollowed, setAvatar} = userSlice.actions
+export const {setEditName, setEditBio, setYourUsersFollowed, setFollowed, setAvatar} = userSlice.actions
 export default userSlice.reducer
 export const GetUserThunk =
     createAsyncThunk<UserType | null, string, { rejectValue: string }>(
@@ -130,6 +141,30 @@ export const GetUserPosts =
             }
         }
     )
+type GetPostCommentsParamsType = { postId: string, userId: string }
+export const GetPostComments =
+    createAsyncThunk<CommentType[], GetPostCommentsParamsType, { rejectValue: string }>(
+        'user/GetPostComments',
+        async ({postId, userId},
+               {dispatch, rejectWithValue}) => {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'post', userId, 'userPosts', postId, 'comments'))
+                let response: CommentType[] = []
+
+                querySnapshot.forEach((doc) => {
+                    const postsData = doc.data() as CommentType
+                    response = [...response, {...postsData, postId: doc.id,}]
+                });
+
+                return response
+            } catch (error) {
+                // if (axios.isAxiosError(error)) {
+                // dispatch(setError({error: error.message}))
+                // }
+                return rejectWithValue('server error')
+            }
+        }
+    )
 export const GetFollowingUsers =
     createAsyncThunk<void, string, { rejectValue: string }>(
         'user/GetFollowingUsers',
@@ -140,7 +175,7 @@ export const GetFollowingUsers =
                 const querySnapshot = await onSnapshot(collection(db, 'following', id, 'userFollowing'), (res) => {
                     response = res.docs.map((doc) => doc.id);
                     dispatch(setFollowed(response))
-                    if(id === currentId ){
+                    if (id === currentId) {
                         dispatch(setYourUsersFollowed(response))
                     }
                 })
@@ -153,6 +188,7 @@ export const GetFollowingUsers =
         }
     )
 export type UserType = {
+    chatsID: string[]
     name: string
     email: string
     uri: string
@@ -163,4 +199,10 @@ type UserPostsRespType = {
     caption: string
     creation: firebase.firestore.FieldValue
     downloadURL: string
+    likeCount: number
+}
+export type CommentType = {
+    creator: string,
+    text: string,
+    postId: string,
 }

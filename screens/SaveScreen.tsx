@@ -36,13 +36,14 @@ const SaveScreen = ({route, navigation}: NativeStackScreenProps<RootTabParamList
         console.log(downloadURL)
         debugger
         await addDoc(collection(db, 'post', uid, 'userPosts'), {
-                downloadURL,
-                caption,
-                creation: firebase.firestore.FieldValue.serverTimestamp()
-            })
+            likesCount: 0,
+            creation: firebase.firestore.FieldValue.serverTimestamp(),
+            downloadURL,
+            caption,
+        })
         alert('Uploaded a post');
         setUploading(false)
-        navigation.navigate('Profile',{id:undefined})
+        navigation.navigate('Profile', {id: undefined})
     }
 
     return (

@@ -7,20 +7,24 @@ import Colors from "../constants/Colors";
 import HomeScreen from "../screens/HomeScreen";
 import {Text} from '../components/Themed'
 import {RootTabParamList, RootTabScreenProps} from "../types";
-import {AntDesign, FontAwesome, Ionicons} from "@expo/vector-icons";
-import {Button, Pressable, TouchableOpacity} from "react-native";
+import {AntDesign, Entypo, Ionicons} from "@expo/vector-icons";
+import {Pressable, TouchableOpacity} from "react-native";
 import ProfileScreen from "../screens/ProfileScreen/ProfileScreen";
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import PhotoScreen from "../screens/PhotoScreen";
 import SaveScreen from "../screens/SaveScreen";
-import PostScreen from "../screens/PostScreen";
+import PostScreen from "../screens/PostScreen/PostScreen";
 import SearchScreen from "../screens/SearchScreen/SearchScreen";
 import {useNavigation} from "@react-navigation/native";
 import EditProfileScreen from "../screens/EditScreen/EditProfileScreen";
 import DoneButton from "../screens/EditScreen/DoneButton";
 import FollowingScreen from "../screens/ProfileScreen/FollowingScreen";
+import CommentScreen from "../screens/CommentScreen";
+import ChatsScreen from "../screens/ChatsScreen/ChatsScreen";
+import MessagesScreen from "../screens/MessagesScreen/MessagesScreen";
+import ChoseUserScreen from "../screens/ChoseUserScreen";
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootTabParamList>();
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 const BottomTabNavigator = () => {
@@ -39,15 +43,13 @@ const BottomTabNavigator = () => {
                     tabBarIcon: ({color}) => <AntDesign name="home" size={24} color={color}/>,
                     headerRight: () => (
                         <Pressable
-                            onPress={() => navigation.navigate('Modal')}
+                            onPress={() => navigation.navigate('Chats')}
                             style={({pressed}) => ({
                                 opacity: pressed ? 0.5 : 1,
                             })}>
-                            <FontAwesome
-                                name="info-circle"
-                                size={25}
-                                color={Colors[colorScheme].text}
-                                style={{marginRight: 15}}
+                            <AntDesign name="message1" size={25}
+                                       color={Colors[colorScheme].text}
+                                       style={{marginRight: 15}}
                             />
                         </Pressable>
                     ),
@@ -75,9 +77,7 @@ const BottomTabNavigator = () => {
                 })}
                 listeners={{
                     tabPress: (event) => {
-                        event.preventDefault(); // works as expected, default redirect will not happen
-
-                        // Ideally create an action and dispatch with params you do not need anymore, like
+                        event.preventDefault();
                         navigation.navigate('Profile', {id: ''})
                     }
                 }}
@@ -87,6 +87,7 @@ const BottomTabNavigator = () => {
 }
 
 const RootNavigator = () => {
+    const colorScheme = useColorScheme();
     const navigation = useNavigation<NativeStackScreenProps<RootTabParamList, 'Profile'>['navigation']>()
     return (
         <Stack.Navigator>
@@ -94,18 +95,49 @@ const RootNavigator = () => {
             <Stack.Screen name="Save" component={SaveScreen} options={{title: 'Save'}}/>
             <Stack.Screen name="Post" component={PostScreen} options={{title: 'Post'}}/>
             <Stack.Screen name="CreatePost" component={PhotoScreen} options={{title: 'Create Post'}}/>
-            <Stack.Screen name="Following" component={FollowingScreen} />
+            <Stack.Screen name="Following" component={FollowingScreen}/>
+            <Stack.Screen name="Comments" component={CommentScreen}/>
             <Stack.Screen
-                name="EditProfile" component={EditProfileScreen} options={{
-                headerTitleAlign: 'center',
-                title: 'Edit Profile',
-                headerRight: () => <DoneButton/>,
-                headerLeft: () => <TouchableOpacity onPress={()=>navigation.goBack()}>
-                    <Text>
-                        Cancel
-                    </Text>
-                </TouchableOpacity>,
-            }}/>
+                name="Chats"
+                component={ChatsScreen}
+                options={(props: NativeStackScreenProps<RootTabParamList, 'Chats'>) => ({
+                    headerRight: () => (
+                        <Pressable
+                            onPress={() => props.navigation.navigate('ChoseUser')}
+                            style={({pressed}) => ({
+                                opacity: pressed ? 0.5 : 1,
+                            })}>
+                            <Entypo
+                                name="new-message"
+                                size={20}
+                                color={Colors[colorScheme].text}
+                                style={{marginRight: 15}}
+                            />
+                        </Pressable>
+                    )
+                })}
+            />
+            <Stack.Screen name="Messages" options={
+                (props: NativeStackScreenProps<RootTabParamList, 'Messages'>) => (
+                    {
+                        title: props.route.params.userName
+                    }
+                )} component={MessagesScreen}
+            />
+            <Stack.Screen
+                name="EditProfile"
+                component={EditProfileScreen}
+                options={{
+                    headerTitleAlign: 'center',
+                    title: 'Edit Profile',
+                    headerRight: () => <DoneButton/>,
+                    headerLeft: () => <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Text>
+                            Cancel
+                        </Text>
+                    </TouchableOpacity>,
+                }}/>
+            <Stack.Screen name="ChoseUser" component={ChoseUserScreen} options={{title: 'Chose user'}}/>
             <Stack.Screen name="NotFound" component={NotFoundScreen} options={{title: 'Oops!'}}/>
             <Stack.Group screenOptions={{presentation: 'modal'}}>
                 <Stack.Screen name="Modal" component={ModalScreen}/>
