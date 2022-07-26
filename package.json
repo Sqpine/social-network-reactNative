@@ -2,6 +2,8 @@
   "name": "my-project",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
+  "ios": { "bundleIdentifier": "Social" },
+  "android": { "package": "Social" },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",

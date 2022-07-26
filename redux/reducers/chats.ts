@@ -3,7 +3,7 @@ import firebase from "firebase/compat";
 import {UserType} from "./user";
 
 export type MessageType = {
-    data: firebase.firestore.Timestamp
+    date: firebase.firestore.Timestamp
     id: string
     message: string
 }

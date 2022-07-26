@@ -9,22 +9,22 @@ type PropsType = {
     name: string
     email: string
     uri: string
-    onPressHandler: (id: string) => void
+    onPressHandler: (id: string, name: string) => void
     showFollow: boolean
 }
 const User: React.FC<PropsType> = ({id, onPressHandler, showFollow, name, uri, email}) => {
     return (
-        <View key={id} style={styles.userContainer}>
+        <View style={styles.userContainer}>
             <TouchableOpacity
                 style={styles.user}
-                onPress={() => onPressHandler(id)}
+                onPress={() => onPressHandler(id, name)}
             >
                 <Image style={styles.avatar} source={uri ? ({uri}) : require('../../assets/images/noAvatar.png')}/>
                 <View style={styles.userInfo}>
-                    <Text>
+                    <Text numberOfLines={1}>
                         {name}
                     </Text>
-                    <Text>
+                    <Text numberOfLines={1}>
                         {email}
                     </Text>
                 </View>
@@ -39,10 +39,13 @@ const User: React.FC<PropsType> = ({id, onPressHandler, showFollow, name, uri, e
 export default User
 const styles = StyleSheet.create({
     avatar: {
-        width: 30,
-        height: '100%'
+        width: 50,
+        height: 50,
+        borderRadius: 50
     },
     user: {
+        width:'60%',
+        alignItems: 'center',
         flexDirection: 'row'
     },
     userInfo: {
@@ -51,6 +54,7 @@ const styles = StyleSheet.create({
     userContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems:'center',
         marginVertical: 10
     }
 });

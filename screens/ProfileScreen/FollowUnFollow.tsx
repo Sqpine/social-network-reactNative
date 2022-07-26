@@ -10,19 +10,16 @@ type PropsType = {
     id: string
 }
 const FollowUnFollow: React.FC<PropsType> = ({id}) => {
-    // const followedUsers = useSelector<RootState, string[]>(state => state.userState.followedUsers)
     const yourFollowedUsers = useSelector<RootState, string[]>(state => state.userState.yourFollowedUsers)
     const [isFollowing, setFollowing] = useState(yourFollowedUsers.indexOf(id) > -1)
 
     const Follow = async () => {
         const currentId = auth.currentUser!.uid
         const querySnapshot = await setDoc(doc(db, 'following', currentId, 'userFollowing', id), {})
-        alert('You follow')
     }
     const Unfollow = async () => {
         const currentId = auth.currentUser!.uid
         const querySnapshot = await deleteDoc(doc(db, 'following', currentId, 'userFollowing', id))
-        alert('You don"t follow')
     }
     useEffect(() => {
         if (yourFollowedUsers.indexOf(id) > -1) {
@@ -34,7 +31,8 @@ const FollowUnFollow: React.FC<PropsType> = ({id}) => {
         <TouchableOpacity style={{
             marginTop: 15,
             borderRadius: 5,
-            paddingVertical: 5,
+
+            padding:8,
             alignItems: 'center',
             borderColor: 'rgba(60, 60, 67, 0.18)',
             borderWidth: 1,
@@ -50,7 +48,7 @@ const FollowUnFollow: React.FC<PropsType> = ({id}) => {
         <TouchableOpacity style={{
             marginTop: 15,
             borderRadius: 5,
-            paddingVertical: 5,
+            padding:8,
             alignItems: 'center',
             backgroundColor: '#3797EF',
             borderColor: 'rgba(60, 60, 67, 0.18)',
