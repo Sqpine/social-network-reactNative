@@ -18,20 +18,20 @@ const Posts: React.FC<PropsType> = ({navigation, route}) => {
 
     return (
         <View style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            flexDirection: 'row',
-            marginHorizontal: 'auto',
-            flex: 3,
-        }}>
+            width: 325,
+            flexWrap:'wrap',
+            flexDirection:'row',
+            marginRight:'auto',
+            marginLeft:'auto',
+        }}
+        >
             {userPosts?.map(
-                ({id, downloadURL, caption, likeCount}) =>
+                ({id, downloadURL, caption, likesCount}) =>
                     <Post
                         key={id}
                         id={id}
                         navigation={navigation}
-                        likesCount={likeCount}
+                        likesCount={likesCount}
                         userId={user && user.id}
                         url={downloadURL}
                         caption={caption}

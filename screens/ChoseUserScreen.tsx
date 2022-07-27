@@ -25,10 +25,12 @@ import {RootState} from "../redux/store";
 import Loader from "../components/Loader";
 import InfoUser from "./SearchScreen/InfoUser";
 import {View} from "../components/Themed";
+import {ChatType} from "../redux/reducers/chats";
 
 type PropsType = NativeStackScreenProps<RootTabParamList, 'ChoseUser'>
 const ChoseUserScreen: React.FC<PropsType> = ({navigation}) => {
     const followedUsers = useSelector<RootState, string[]>(state => state.userState.yourFollowedUsers)
+    const chats = useSelector<RootState, ChatType[]>(state => state.chatsState.chats)
     const [isFetching, setFetching] = useState(false)
     const [isFetchingUser, setFetchingUser] = useState(true)
     const [users, setUsers] = useState<UserType[]>([])
@@ -80,13 +82,19 @@ const ChoseUserScreen: React.FC<PropsType> = ({navigation}) => {
     }
 
     const onPressHandler = useCallback(async (id: string, name: string) => {
+        const index = chats.findIndex((e)=>e.users.includes(id))
+
+        if(index > -1){
+            navigation.navigate('Messages', {chatID: chats[index].chatID, userName: name})
+            return
+        }
         setFetching(true)
         let chatRef
         chatRef = collection(db, 'chats');
         const createdDoc = await addDoc(chatRef, {users: [id, uid]})
 
         chatRef = doc(db, 'chats', createdDoc.id);
-        await updateDoc(chatRef, {chatId: createdDoc.id})
+        await updateDoc(chatRef, {chatID: createdDoc.id})
 
         for await (const currentID of [id, uid]) {
             chatRef = doc(db, 'users', currentID);

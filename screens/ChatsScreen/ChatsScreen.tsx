@@ -14,12 +14,12 @@ import Loader from "../../components/Loader";
 import InfoUser from "../SearchScreen/InfoUser";
 
 export type ChatRespType = {
-    chatId: string
+    chatID: string
     users: string[]
 }
 const ChatsScreen = () => {
     const [userName, setUserName] = useState('')
-    const user = useSelector<RootState, UserType | null>(state => state.userState.user)
+    const chatsID = useSelector<RootState, string[]>(state => state.userState.yourChats)
     const chats = useSelector<RootState, ChatType[]>(state => state.chatsState.chats)
 
     const [isFetching, setFetching] = useState(true)
@@ -29,10 +29,7 @@ const ChatsScreen = () => {
     const uid = auth.currentUser!.uid
 
     useEffect(() => {
-        doSome().then(chats => {
-            dispatch(setChats(chats))
-            setFetching(false)
-        })
+        doSome().then(() => setFetching(false))
         return () => {
             dispatch(setChats([]))
         }
@@ -43,10 +40,10 @@ const ChatsScreen = () => {
     }, [chats])
 
     const doSome = async () => {
-        if (user) {
+        if (chatsID.length > 0) {
             let preview: null | UserType = null
             setFetching(true)
-            const res = user.chatsID.map(async (id) => {
+            const res = chatsID.map(async (id) => {
                 const docRef = doc(db, "chats", id);
                 const docSnap = await getDoc(docRef);
                 const resp = docSnap.data() as ChatRespType
@@ -64,10 +61,12 @@ const ChatsScreen = () => {
                 }
                 return {preview, ...resp}
             });
-            Promise.all(res).then(p => dispatch(setChats(p)))
+            await Promise.all(res).then(p => dispatch(setChats(p)))
+            setFetching(false)
         }
         return []
     }
+
     const searchSubmit = () => {
         if (!userName.trim()) {
             if (chats.length === 0 && chats.length > 0) setExist(false)
@@ -89,7 +88,7 @@ const ChatsScreen = () => {
                 userName={userName}
                 placeHolder={'Search'}
             />
-            {isFetching || chats.length === 0 &&
+            {isFetching && chats.length === 0 &&
                 <Loader color="#0000ff" size="large"/>
             }
             {!isFetching && chats.length > 0 && isExist &&
@@ -98,10 +97,10 @@ const ChatsScreen = () => {
                 >
                     {chatList.map
                     (
-                        ({chatId, users, preview}) => (
+                        ({chatID, users, preview}) => (
                             <ChatItem
-                                key={chatId}
-                                chatID={chatId}
+                                key={chatID}
+                                chatID={chatID}
                                 users={users}
                                 preview={preview}
                             />
@@ -110,7 +109,7 @@ const ChatsScreen = () => {
                     }
                 </ScrollView>
             }
-            {isFetching && chats.length === 0 &&
+            {!isFetching && chats.length === 0 &&
                 <InfoUser ico="rocketchat" text="Please create a chat"/>
             }
             {!isFetching && !isExist ?

@@ -2,6 +2,7 @@ import {createAsyncThunk, createSlice, isAnyOf, PayloadAction} from '@reduxjs/to
 import {collection, doc, getDoc, getDocs, onSnapshot} from "firebase/firestore";
 import {auth, db} from "../../firebase";
 import firebase from "firebase/compat";
+
 export type EditInfoType = {
     name: string
     bio: string
@@ -12,28 +13,32 @@ export type UsersPostsType = {
     caption: string
     creation: firebase.firestore.FieldValue
     downloadURL: string
-    likeCount: number
+    likesCount: number
 }
 // Define a type for the slice state
 export type UserState = {
     user: null | UserType
     isFetching: boolean
     followedUsers: string[]
+    yourChats: string[]
     yourFollowedUsers: string[]
     editInfo: EditInfoType
     userPosts: UsersPostsType[] | null
     postComments: CommentType[]
+    isUpdatingBio:boolean
 }
 
 // Define the initial state using that type
 const initialState: UserState = {
     user: null,
     followedUsers: [],
+    yourChats: [],
     yourFollowedUsers: [],
     editInfo: {name: '', bio: '', uri: null},
     userPosts: null,
     postComments: [],
-    isFetching: false
+    isFetching: true,
+    isUpdatingBio:false
 }
 
 export const userSlice = createSlice({
@@ -56,6 +61,12 @@ export const userSlice = createSlice({
         setYourUsersFollowed: (state, action: PayloadAction<string[]>) => {
             state.yourFollowedUsers = action.payload
         },
+        setYourChats: (state, action: PayloadAction<string[]>) => {
+            state.yourChats = action.payload
+        },
+        setUpdatingBio:(state, action:PayloadAction<boolean>)=>{
+            state.isUpdatingBio=action.payload
+        }
     },
     extraReducers: (builder) => {
         builder.addCase(GetUserThunk.fulfilled,
@@ -91,7 +102,15 @@ export const userSlice = createSlice({
     }
 })
 
-export const {setEditName, setEditBio, setYourUsersFollowed, setFollowed, setAvatar} = userSlice.actions
+export const {
+    setEditName,
+    setYourChats,
+    setEditBio,
+    setYourUsersFollowed,
+    setFollowed,
+    setAvatar,
+    setUpdatingBio
+} = userSlice.actions
 export default userSlice.reducer
 export const GetUserThunk =
     createAsyncThunk<UserType | null, string, { rejectValue: string }>(
@@ -101,8 +120,13 @@ export const GetUserThunk =
             try {
                 const res = await getDoc(doc(db, "users", id))
                 if (res.exists()) {
+                    const response = res.data() as UserType
+                    const currentId = auth.currentUser!.uid
+                    if (id === currentId) {
+                        dispatch(setYourChats(response.chatsID))
+                    }
                     return {
-                        ...res.data() as UserType,
+                        ...response,
                         id: res.id,
                     }
                 } else {
@@ -199,7 +223,7 @@ type UserPostsRespType = {
     caption: string
     creation: firebase.firestore.FieldValue
     downloadURL: string
-    likeCount: number
+    likesCount: number
 }
 export type CommentType = {
     creator: string,

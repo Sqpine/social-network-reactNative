@@ -9,14 +9,14 @@ type PropsType = {
     url: string
     caption: string
     userId: string | null
-    likesCount:number
+    likesCount: number
     navigation: NativeStackScreenProps<RootTabParamList, 'Profile'>['navigation']
 }
-const Post: React.FC<PropsType> = ({url, caption,likesCount, userId, id, navigation}) => {
+const Post: React.FC<PropsType> = ({url, caption, likesCount, userId, id, navigation}) => {
 
     const openPost = () => {
         if (!userId) return
-        navigation.navigate('Post', {image: url, caption,likesCount, postId: id, userId})
+        navigation.navigate('Post', {image: url, caption, likesCount, postId: id, userId})
     }
     return (
         <TouchableHighlight onPress={openPost} underlayColor="white">

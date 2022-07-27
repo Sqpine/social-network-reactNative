@@ -22,6 +22,8 @@ export default function SignInUp({navigation}: NativeStackScreenProps<StackParam
                 await setDoc(doc(db, "users", auth.currentUser!.uid), {
                     name: userName,
                     email,
+                    bio:'',
+                    uri:''
                 });
             } catch (e) {
                 const errorMessage = e.message;

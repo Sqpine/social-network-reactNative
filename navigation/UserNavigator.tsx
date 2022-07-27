@@ -120,7 +120,15 @@ const RootNavigator = () => {
             <Stack.Screen name="Messages" options={
                 (props: NativeStackScreenProps<RootTabParamList, 'Messages'>) => (
                     {
-                        title: props.route.params.userName
+                        title: props.route.params.userName,
+                        headerLeft: () => <Ionicons
+                            style={{marginRight: 30, marginLeft: 15}}
+                            onPress={() => props.navigation.navigate('Chats')}
+                            name="arrow-back-outline"
+                            size={24}
+                            color="black"
+                        />
+
                     }
                 )} component={MessagesScreen}
             />
@@ -137,7 +145,13 @@ const RootNavigator = () => {
                         </Text>
                     </TouchableOpacity>,
                 }}/>
-            <Stack.Screen name="ChoseUser" component={ChoseUserScreen} options={{title: 'Chose user'}}/>
+            <Stack.Screen
+                name="ChoseUser"
+                component={ChoseUserScreen}
+                options={{
+                    title: 'Chose user',
+                }}
+            />
             <Stack.Screen name="NotFound" component={NotFoundScreen} options={{title: 'Oops!'}}/>
             <Stack.Group screenOptions={{presentation: 'modal'}}>
                 <Stack.Screen name="Modal" component={ModalScreen}/>

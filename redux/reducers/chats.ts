@@ -8,7 +8,7 @@ export type MessageType = {
     message: string
 }
 export type ChatType = {
-    chatId: string
+    chatID: string
     users: string[]
     preview: UserType | null
 }
@@ -31,10 +31,19 @@ export const chatsSlice = createSlice({
         setChats: (state, action: PayloadAction<ChatType[]>) => {
             state.chats = action.payload
         },
-        setMessages:(state,action:PayloadAction<MessageType[]>)=>{
-            state.messages=action.payload
+        setMessages: (state, action: PayloadAction<MessageType[]>) => {
+            state.messages = action.payload
+        },
+        removeChats: (state, action: PayloadAction<string>) => {
+            const id = action.payload
+            const index = state.chats.findIndex(chat => chat.chatID === id)
+            
+            if (index > -1) {
+                state.chats.splice(index, 1)
+            }
         }
     },
 })
-export const {setChats,setMessages} = chatsSlice.actions
+
+export const {setChats, removeChats, setMessages} = chatsSlice.actions
 export default chatsSlice.reducer

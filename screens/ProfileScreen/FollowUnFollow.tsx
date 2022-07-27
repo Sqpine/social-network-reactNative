@@ -12,13 +12,12 @@ type PropsType = {
 const FollowUnFollow: React.FC<PropsType> = ({id}) => {
     const yourFollowedUsers = useSelector<RootState, string[]>(state => state.userState.yourFollowedUsers)
     const [isFollowing, setFollowing] = useState(yourFollowedUsers.indexOf(id) > -1)
+    const currentId = auth.currentUser!.uid
 
     const Follow = async () => {
-        const currentId = auth.currentUser!.uid
         const querySnapshot = await setDoc(doc(db, 'following', currentId, 'userFollowing', id), {})
     }
     const Unfollow = async () => {
-        const currentId = auth.currentUser!.uid
         const querySnapshot = await deleteDoc(doc(db, 'following', currentId, 'userFollowing', id))
     }
     useEffect(() => {

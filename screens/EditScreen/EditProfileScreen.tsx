@@ -7,36 +7,49 @@ import {Image, StyleSheet, TextInput} from "react-native";
 import ChangeAvatar from "./ChangeAvatar";
 
 const EditProfileScreen = () => {
+    const isUpdatingBio = !useSelector<RootState, boolean>(state => state.userState.isUpdatingBio)
     const {name, bio, uri} = useSelector<RootState, EditInfoType>(state => state.userState.editInfo)
     const [image, setImage] = useState<string | null>(uri);
     const dispatch = useDispatch<any>()
+
     useEffect(() => {
-        if (uri) {
-            dispatch(setAvatar(uri))
+        if (image) {
+            dispatch(setAvatar(image))
         }
-    }, [uri])
+    }, [image])
+
     return (
         <View style={styles.container}>
             <View style={{alignItems: 'center'}}>
-                <Image style={{marginVertical: 20, width: 100, height: 100, borderRadius: 100}}
+                <Image style={styles.image}
                        source={image ? ({uri: image}) : require('../../assets/images/noAvatar.png')}/>
-                <ChangeAvatar setUri={setImage}/>
+                <ChangeAvatar isDisabled={!isUpdatingBio} setUri={setImage}/>
             </View>
             <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)"/>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={styles.nameContainer}>
                 <Text style={{width: '30%'}}>
                     Name
                 </Text>
                 <View style={styles.textInput}>
-                    <TextInput style={{flex: 1}} value={name} onChangeText={(t) => dispatch(setEditName(t))}/>
+                    <TextInput
+                        style={{flex: 1}}
+                        editable={isUpdatingBio}
+                        selectTextOnFocus={isUpdatingBio}
+                        value={name}
+                        onChangeText={(t) => dispatch(setEditName(t))}/>
                 </View>
             </View>
-            <View style={{flexDirection: 'row', alignItems: 'center', marginVertical: 20}}>
+            <View style={styles.bioContainer}>
                 <Text style={{width: '30%'}}>
                     Bio
                 </Text>
                 <View style={styles.textInput}>
-                    <TextInput style={{flex: 1}} value={bio} onChangeText={(t) => dispatch(setEditBio(t))}/>
+                    <TextInput
+                        style={{flex: 1}}
+                        editable={isUpdatingBio}
+                        selectTextOnFocus={isUpdatingBio}
+                        value={bio}
+                        onChangeText={(t) => dispatch(setEditBio(t))}/>
                 </View>
             </View>
         </View>
@@ -46,13 +59,27 @@ export default EditProfileScreen
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // alignItems:'center',
         paddingHorizontal: 15,
+    },
+    image: {
+        marginVertical: 20,
+        width: 100,
+        height: 100,
+        borderRadius: 100
     },
     separator: {
         marginVertical: 30,
         height: 1,
         width: '100%',
+    },
+    nameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    bioContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 20
     },
     textInput: {
         flex: 1,

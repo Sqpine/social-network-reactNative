@@ -4,10 +4,12 @@ import {Camera, CameraType} from "expo-camera";
 import {useIsFocused} from "@react-navigation/native";
 import {TouchableOpacity} from "react-native";
 import {Text} from "../../components/Themed";
-type PropsType={
-    setUri:(s:string)=>void
+
+type PropsType = {
+    setUri: (s: string) => void
+    isDisabled: boolean
 }
-const ChangeAvatar:React.FC<PropsType> = ({setUri}) => {
+const ChangeAvatar: React.FC<PropsType> = ({setUri, isDisabled}) => {
     const [hasGalleryPermission, setHasGalleryPermission] = useState<boolean | null>(null);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [camera, setCamera] = useState<Camera | null>(null);
@@ -33,7 +35,7 @@ const ChangeAvatar:React.FC<PropsType> = ({setUri}) => {
     }
 
     return (
-        <TouchableOpacity onPress={() => pickImage()}>
+        <TouchableOpacity disabled={isDisabled} onPress={() => pickImage()}>
             <Text style={{fontWeight: 'bold', color: '#3897F0'}}>
                 Change Profile Photo
             </Text>

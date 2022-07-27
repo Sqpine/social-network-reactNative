@@ -50,17 +50,17 @@ const PostScreen: React.FC<PropsType> = ({route}) => {
                 }
                 <View style={styles.footer}>
                     <Text style={styles.nameText}>{user!.name}</Text>
-                    {isReadMore ?
-                        <>
-                            <Text>{route.params.caption}</Text>
-                            <Text style={styles.followText} onPress={() => setReadMore(false)}>Read Less</Text>
-                        </>
-                        :
-                        <>
-                            <Text numberOfLines={3}>{route.params.caption}</Text>
-                            <Text style={styles.followText} onPress={() => setReadMore(true)}>Read More</Text>
-                        </>
-                    }
+                    {/*{isReadMore ?*/}
+                    {/*    <>*/}
+                    {/*        <Text>{route.params.caption}</Text>*/}
+                    {/*        <Text style={styles.followText} onPress={() => setReadMore(false)}>Read Less</Text>*/}
+                    {/*    </>*/}
+                    {/*    :*/}
+                    {/*    <>*/}
+                    {/*        <Text numberOfLines={3}>{route.params.caption}</Text>*/}
+                    {/*        <Text style={styles.followText} onPress={() => setReadMore(true)}>Read More</Text>*/}
+                    {/*    </>*/}
+                    {/*}*/}
                 </View>
                 <LikeSystem likesCount={likesCount} postId={postId} userId={userId}/>
                 <TouchableOpacity
