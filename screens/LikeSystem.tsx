@@ -1,65 +1,68 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {auth, db} from "../firebase";
-import {deleteDoc, doc, onSnapshot, setDoc, updateDoc} from "firebase/firestore";
+import {deleteDoc, doc, getDoc, setDoc, updateDoc} from "firebase/firestore";
 import {AntDesign} from "@expo/vector-icons";
-import {StyleSheet, TouchableOpacity} from "react-native";
-import {Text} from "../components/Themed";
+import {TouchableOpacity} from "react-native";
+import {UsersPostsType} from "../redux/reducers/user";
 
 type PropsType = {
     userId: string
     postId: string
+    currentUserLike: boolean
     likesCount: number
+    setLikesCount: (count: number) => void
 }
-const LikeSystem: React.FC<PropsType> = ({postId, userId, likesCount}) => {
+const LikeSystem: React.FC<PropsType> = (
+    {
+        currentUserLike,
+        postId,
+        userId,
+        likesCount,
+        setLikesCount
+    }
+) => {
     const uid = auth.currentUser!.uid
-    const [currentUserLike, setCurrentUserLike] = useState(false)
     const [isFetching, setFetching] = useState(false)
-    const [amountOfLikes, setAmountOfLikes] = useState(likesCount)
-    useEffect(() => {
-        onSnapshot(doc(db, 'post', userId, 'userPosts', postId, 'likes', uid), (res) => {
-            let currentUserLike = false;
-            if (res.exists()) {
-                currentUserLike = true;
-            }
-            setCurrentUserLike(currentUserLike)
-        })
-    }, [])
 
     const setLikeHandle = async () => {
-        if (isFetching) return
-        const currentAmoutOfLikes = amountOfLikes + 1
         setFetching(true)
+
+        let userPostResp = await getDoc(doc(db, 'post', userId, 'userPosts', postId))
+        const userPostData = userPostResp.data() as UsersPostsType
+        const currentAmountOfLikes = userPostData.likesCount + 1
+
         await setDoc(doc(db, 'post', userId, 'userPosts', postId, 'likes', uid), {})
-        await saveLikeCount(currentAmoutOfLikes)
+        await saveLikeCount(currentAmountOfLikes)
         setFetching(false)
-        setAmountOfLikes(currentAmoutOfLikes)
+        setLikesCount(currentAmountOfLikes)
     }
     const removeLikeHandle = async () => {
-        if (isFetching) return
-        const currentAmoutOfLikes = amountOfLikes - 1
         setFetching(true)
+
+        let userPostResp = await getDoc(doc(db, 'post', userId, 'userPosts', postId))
+        const userPostData = userPostResp.data() as UsersPostsType
+        const currentAmountOfLikes = userPostData.likesCount - 1
+
         await deleteDoc(doc(db, 'post', userId, 'userPosts', postId, 'likes', uid))
-        await saveLikeCount(currentAmoutOfLikes)
+        await saveLikeCount(currentAmountOfLikes)
         setFetching(false)
-        setAmountOfLikes(currentAmoutOfLikes)
+        setLikesCount(currentAmountOfLikes)
     }
     const saveLikeCount = async (amountOfLikes: number) => {
-        await updateDoc(doc(db, 'post', uid, 'userPosts', postId), {
-            likesCount: amountOfLikes
+        await updateDoc(doc(db, 'post', userId, 'userPosts', postId), {
+            "likesCount": amountOfLikes
         });
     }
     return (
-        <TouchableOpacity style={styles.footerLike}>
+        <TouchableOpacity disabled={isFetching}>
             {
                 currentUserLike ?
                     <>
                         <AntDesign onPress={removeLikeHandle} name="heart" size={24} color="red"/>
-                        <Text style={{marginHorizontal: 10, fontSize: 15}}>{amountOfLikes}</Text>
                     </>
                     :
                     <>
                         <AntDesign onPress={setLikeHandle} name="hearto" size={24} color="black"/>
-                        <Text style={{marginHorizontal: 10, fontSize: 15, color: 'black'}}>{amountOfLikes}</Text>
                     </>
 
             }
@@ -67,12 +70,3 @@ const LikeSystem: React.FC<PropsType> = ({postId, userId, likesCount}) => {
     )
 }
 export default LikeSystem
-
-const styles = StyleSheet.create({
-    footerLike: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-    },
-});

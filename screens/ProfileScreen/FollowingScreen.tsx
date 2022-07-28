@@ -9,6 +9,9 @@ import {RootState} from "../../redux/store";
 import {ScrollView, StyleSheet} from "react-native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {RootTabParamList} from "../../types";
+import Loader from "../../components/Loader";
+import InfoUser from "../SearchScreen/InfoUser";
+import {View} from "../../components/Themed";
 
 type PropsType = {
     navigation: NativeStackScreenProps<RootTabParamList, 'Following'>['navigation']
@@ -16,10 +19,15 @@ type PropsType = {
 const FollowingScreen: React.FC<PropsType> = ({navigation}) => {
     const followedUsers = useSelector<RootState, string[]>(state => state.userState.followedUsers)
     const [users, setUsers] = useState<UserType[]>([])
-    const uid = auth.currentUser!.uid
+    const [isFetching, setFetching] = useState(true)
 
     useEffect(() => {
-        followedUsers.forEach(async (user) => {
+        getFollowers()
+    }, [])
+    const getFollowers = async () => {
+        setFetching(true)
+
+        await Promise.all(followedUsers.map(async (user) => {
             const docRef = doc(db, "users", user);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
@@ -29,9 +37,10 @@ const FollowingScreen: React.FC<PropsType> = ({navigation}) => {
             } else {
                 console.log("No such document!");
             }
-        })
-    }, [])
+        }))
 
+        setFetching(false)
+    }
     const onPressHandler = useCallback((id: string) => {
         navigation.navigate('Profile', {id: id})
     }, [])
@@ -51,15 +60,22 @@ const FollowingScreen: React.FC<PropsType> = ({navigation}) => {
         , [users]
     )
     return (
-        <ScrollView
-            style={styles.container}
-            showsVerticalScrollIndicator={false}
-        >
-            {usersList}
-        </ScrollView>
+        <View style={{flex:1}}>
+            {!isFetching &&
+                <ScrollView
+                    style={styles.container}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {usersList}
+                </ScrollView>
+            }
+            {isFetching && <Loader color="#0000ff" size="large"/>}
+            {!isFetching && usersList.length === 0 && <InfoUser text="You aren't following anybody" ico="users"/>}
+        </View>
     )
 }
 export default FollowingScreen
+
 const styles = StyleSheet.create({
     container: {
         backgroundColor: 'white',

@@ -31,6 +31,7 @@ const Posts: React.FC<PropsType> = ({navigation, route}) => {
                         key={id}
                         id={id}
                         navigation={navigation}
+                        name={user && user.name}
                         likesCount={likesCount}
                         userId={user && user.id}
                         url={downloadURL}

@@ -1,83 +1,121 @@
-import React, {useState} from "react";
-import {Dimensions, Image, StyleSheet, TextInput, TouchableOpacity} from "react-native";
+import React, {useEffect, useState} from "react";
+import {Dimensions, Image, ScrollView, StyleSheet, TextInput, TouchableOpacity} from "react-native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {RootTabParamList} from "../../types";
 import {Text, View} from '../../components/Themed';
 import {useSelector} from "react-redux";
 import {RootState} from "../../redux/store";
 import {UserState} from "../../redux/reducers/user";
-import {collection, doc, setDoc} from "firebase/firestore";
+import {collection, doc, onSnapshot, setDoc} from "firebase/firestore";
 import {auth, db} from "../../firebase";
-import {useNavigation} from "@react-navigation/native";
 import LikeSystem from "../LikeSystem";
+import FollowUnFollow from "../ProfileScreen/FollowUnFollow";
+import {FontAwesome5} from '@expo/vector-icons';
+import Caption from "./Caption";
 
 type PropsType = {
     route: NativeStackScreenProps<RootTabParamList, 'Post'>['route']
+    navigation: NativeStackScreenProps<RootTabParamList, 'Post'>['navigation']
 }
-const PostScreen: React.FC<PropsType> = ({route}) => {
-    const navigation = useNavigation<NativeStackScreenProps<RootTabParamList, 'Post'>['navigation']>()
+const PostScreen: React.FC<PropsType> = ({route, navigation}) => {
     const uid = auth.currentUser!.uid
-    const {postId, userId,likesCount} = route.params
+    const {
+        postId,
+        userId,
+        caption,
+        likesCount,
+        image,
+        name
+    } = route.params
+
+    const {user} = useSelector<RootState, UserState>(state => state.userState)
+
     const [comment, setComment] = useState('')
     const [isReadMore, setReadMore] = useState(false)
-    const {user} = useSelector<RootState, UserState>(state => state.userState)
+    const [currentUserLike, setCurrentUserLike] = useState(false)
+    const [amountOfLikes, setAmountOfLikes] = useState(likesCount)
+
+    useEffect(() => {
+        onSnapshot(doc(db, 'post', userId, 'userPosts', postId, 'likes', uid), (res) => {
+            let currentUserLike = false;
+            if (res.exists()) {
+                currentUserLike = true;
+            }
+            setCurrentUserLike(currentUserLike)
+        })
+    }, [])
+
     const leaveComment = async () => {
         if (!comment.trim() && comment.length > 180) return
-        debugger
         await setDoc(doc(collection(db, 'post', userId, 'userPosts', postId, 'comments')), {
             creator: uid,
             text: comment
         })
-        debugger
         setComment('')
         navigation.navigate('Comments', {postId, userId})
     }
+
     return (
         <View style={styles.container}>
-            <View style={styles.card}>
+            <ScrollView style={styles.card}>
                 <View style={styles.header}>
-                    <View style={styles.profile}>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Profile', {id: userId})}
+                        style={styles.profile}
+                    >
                         <Image style={styles.avatar} resizeMode="cover"
-                               source={require('../../assets/images/noAvatar.png')}/>
+                               source={
+                                   user ?
+                                       {uri: user.uri}
+                                       :
+                                       require('../../assets/images/noAvatar.png')
+                               }
+                        />
                         <Text style={styles.nameText}>{user!.name}</Text>
-                    </View>
-                    <Text style={styles.followText}>Follow</Text>
+                    </TouchableOpacity>
+                    {userId !== uid
+                        &&
+                        <FollowUnFollow id={userId}/>
+                    }
                 </View>
-                {route.params &&
-                    <Image style={styles.image}
-                           resizeMode="cover" source={{uri: route.params.image}}/>
-
-                }
-                <View style={styles.footer}>
-                    <Text style={styles.nameText}>{user!.name}</Text>
-                    {/*{isReadMore ?*/}
-                    {/*    <>*/}
-                    {/*        <Text>{route.params.caption}</Text>*/}
-                    {/*        <Text style={styles.followText} onPress={() => setReadMore(false)}>Read Less</Text>*/}
-                    {/*    </>*/}
-                    {/*    :*/}
-                    {/*    <>*/}
-                    {/*        <Text numberOfLines={3}>{route.params.caption}</Text>*/}
-                    {/*        <Text style={styles.followText} onPress={() => setReadMore(true)}>Read More</Text>*/}
-                    {/*    </>*/}
-                    {/*}*/}
-                </View>
-                <LikeSystem likesCount={likesCount} postId={postId} userId={userId}/>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('Comments', {postId, userId})}
-                >
-                    <Text>
-                        Comment Screen
-                    </Text>
-                </TouchableOpacity>
-                <View>
-                    <TextInput value={comment}
-                               onChangeText={(t) => setComment(t)}
-                               onSubmitEditing={leaveComment}
-                               placeholder="Comment . . ."
+                <Image style={styles.image}
+                       resizeMode="cover" source={{uri: image}}/>
+                <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 5,
+                }}>
+                    <LikeSystem
+                        likesCount={amountOfLikes}
+                        postId={postId}
+                        userId={userId}
+                        currentUserLike={currentUserLike}
+                        setLikesCount={setAmountOfLikes}
                     />
+                    <TouchableOpacity
+                        style={{marginHorizontal: 25,}}
+                        onPress={() => navigation.navigate('Comments', {postId, userId})}
+                    >
+                        <FontAwesome5 name="comment" size={24} color="black"/>
+                    </TouchableOpacity>
                 </View>
-            </View>
+                {amountOfLikes > 0 ?
+                    <Text>
+                        Liked {amountOfLikes}
+                    </Text>
+                    :
+                    <Text>
+                        You can like it first
+                    </Text>
+                }
+                {caption ? <Caption caption={caption} name={name}/> : null}
+                <TextInput
+                    value={comment}
+                    onChangeText={(t) => setComment(t)}
+                    onSubmitEditing={leaveComment}
+                    placeholder="Comment . . ."
+                />
+            </ScrollView>
         </View>
     )
 
@@ -88,7 +126,9 @@ const screen = Dimensions.get("screen");
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
+        alignItems: 'center',
+        flexDirection: 'column',
+        backgroundColor: 'white',
     },
     card: {
         backgroundColor: "#fff",
@@ -100,6 +140,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 7,
         paddingVertical: 10,
+    },
+    nameText: {
+        paddingHorizontal: 5,
+        fontWeight: "bold",
+        color: "#20232a",
     },
     profile: {
         display: 'flex',
@@ -114,22 +159,5 @@ const styles = StyleSheet.create({
     image: {
         maxHeight: 500,
         height: screen.width * 0.8,
-    },
-    footer: {
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-    },
-    footerLike: {
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-    },
-    nameText: {
-        paddingHorizontal: 5,
-        fontWeight: "bold",
-        color: "#20232a",
-    },
-    followText: {
-        fontWeight: "bold",
-        color: "#0095f6",
     },
 });

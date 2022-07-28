@@ -25,7 +25,7 @@ export type UserState = {
     editInfo: EditInfoType
     userPosts: UsersPostsType[] | null
     postComments: CommentType[]
-    isUpdatingBio:boolean
+    isUpdatingBio: boolean
 }
 
 // Define the initial state using that type
@@ -38,7 +38,7 @@ const initialState: UserState = {
     userPosts: null,
     postComments: [],
     isFetching: true,
-    isUpdatingBio:false
+    isUpdatingBio: false
 }
 
 export const userSlice = createSlice({
@@ -64,9 +64,9 @@ export const userSlice = createSlice({
         setYourChats: (state, action: PayloadAction<string[]>) => {
             state.yourChats = action.payload
         },
-        setUpdatingBio:(state, action:PayloadAction<boolean>)=>{
-            state.isUpdatingBio=action.payload
-        }
+        setUpdatingBio: (state, action: PayloadAction<boolean>) => {
+            state.isUpdatingBio = action.payload
+        },
     },
     extraReducers: (builder) => {
         builder.addCase(GetUserThunk.fulfilled,
@@ -109,7 +109,7 @@ export const {
     setYourUsersFollowed,
     setFollowed,
     setAvatar,
-    setUpdatingBio
+    setUpdatingBio,
 } = userSlice.actions
 export default userSlice.reducer
 export const GetUserThunk =

@@ -35,6 +35,7 @@ export type RootTabParamList = {
         image: string
     } | undefined
     Post: {
+        name:string
         likesCount: number
         caption: string
         image: string

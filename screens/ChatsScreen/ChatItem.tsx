@@ -6,7 +6,7 @@ import {useNavigation} from "@react-navigation/native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {RootTabParamList} from "../../types";
 import {MaterialIcons} from '@expo/vector-icons';
-import {arrayRemove , deleteDoc, doc, updateDoc} from "firebase/firestore";
+import {arrayRemove, deleteDoc, doc, updateDoc} from "firebase/firestore";
 import {db} from "../../firebase";
 import {removeChats} from "../../redux/reducers/chats";
 import {useDispatch} from "react-redux";
@@ -27,18 +27,25 @@ const ChatItem: React.FC<PropsType> = ({chatID, preview, users}) => {
     const email = preview?.email
 
     const deleteChat = async () => {
-        let chatRef = doc(db, "chats", chatID)
-        await deleteDoc(chatRef)
+        setFetching(true)
+        try {
+            let chatRef = doc(db, "chats", chatID)
+            await deleteDoc(chatRef)
 
-        users.forEach(async (user) => {
-            chatRef = doc(db, 'users', user);
-            await updateDoc(chatRef, {chatsID: arrayRemove(chatID)});
-        })
+            users.forEach(async (user) => {
+                chatRef = doc(db, 'users', user);
+                await updateDoc(chatRef, {chatsID: arrayRemove(chatID)});
+            })
 
-        chatRef = doc(db, "messages", chatID)
-        await deleteDoc(chatRef)
-        alert("Deleted")
-        dispatch(removeChats(chatID))
+            chatRef = doc(db, "messages", chatID)
+            await deleteDoc(chatRef)
+            dispatch(removeChats(chatID))
+            alert("Deleted")
+        } catch (e) {
+            if (!e.message) return
+            alert(e.message)
+        }
+        setFetching(false)
     }
     return (
         <View style={styles.userContainer}>

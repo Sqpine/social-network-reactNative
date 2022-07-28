@@ -37,6 +37,9 @@ const ProfileScreen: React.FC<PropsType> = ({navigation, route}) => {
             dispatch(GetUserThunk(id))
             dispatch(GetUserPosts(id))
             dispatch(GetFollowingUsers(id))
+            return () => {
+                // dispatch(setProfile(null))
+            }
         }, [route.params])
     )
     const userPostsCount = userPosts?.length || 0
@@ -59,6 +62,7 @@ const ProfileScreen: React.FC<PropsType> = ({navigation, route}) => {
                             id={user.id}
                             uri={user.uri}
                             name={user.name}
+                            bio={user.bio}
                             userPostsCount={userPostsCount}
                         />
                         <View onLayout={(event) => {

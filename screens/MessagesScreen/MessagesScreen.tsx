@@ -8,15 +8,16 @@ import {arrayUnion, doc, onSnapshot, updateDoc} from "firebase/firestore";
 import {auth, db} from "../../firebase";
 import {RootState} from "../../redux/store";
 import Message from "./Message";
-import {ScrollView, StyleSheet, TextInput, TouchableOpacity} from "react-native";
+import {BackHandler, ScrollView, StyleSheet, TextInput, TouchableOpacity} from "react-native";
 import {Ionicons} from '@expo/vector-icons';
 import firebase from "firebase/compat";
 import Loader from "../../components/Loader";
 
 type PropsType = {
     route: NativeStackScreenProps<RootTabParamList, 'Messages'>['route']
+    navigation: NativeStackScreenProps<RootTabParamList, 'Messages'>['navigation']
 }
-const MessagesScreen: React.FC<PropsType> = ({route}) => {
+const MessagesScreen: React.FC<PropsType> = ({route, navigation}) => {
     const {params} = route
     const scrollViewRef = useRef<ScrollView>(null);
     const messages = useSelector<RootState, MessageType[]>(state => state.chatsState.messages)
@@ -25,6 +26,18 @@ const MessagesScreen: React.FC<PropsType> = ({route}) => {
     const [isFetchingMessages, setFetchingMessages] = useState(true)
     const dispatch = useDispatch<any>()
 
+    useEffect(() => {
+        BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+
+        return () => {
+            BackHandler.removeEventListener('hardwareBackPress', handleBackButtonClick);
+        }
+    }, [])
+    
+    const handleBackButtonClick = () => {
+        navigation.navigate('Chats')
+        return true;
+    }
     useEffect(() => {
         if (!params.chatID) return
         scrollViewRef.current?.scrollToEnd({animated: true})
@@ -56,7 +69,7 @@ const MessagesScreen: React.FC<PropsType> = ({route}) => {
     }
 
     return (<View style={{flex: 1}}>
-            {isFetchingMessages?
+            {isFetchingMessages ?
                 <Loader color="#0000ff" size="large"/>
                 :
                 <ScrollView
@@ -152,7 +165,7 @@ const styles = StyleSheet.create({
     search: {
         marginHorizontal: 10,
     },
-    loader:{
+    loader: {
         marginLeft: 'auto',
         marginRight: 'auto',
         paddingVertical: 5

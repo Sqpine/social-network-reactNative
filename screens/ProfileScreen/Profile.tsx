@@ -15,6 +15,7 @@ type PropsType = {
     uri: string
     name: string
     id: string
+    bio: string
     userPostsCount: number
     scrollViewRef: RefObject<ScrollView>
     position: PositionType
@@ -26,7 +27,8 @@ const Profile: React.FC<PropsType> = (
         scrollViewRef,
         userPostsCount,
         name,
-        id
+        id,
+        bio
     }
 ) => {
     const [isSigningOut, SigningOut] = useState(false)
@@ -91,6 +93,13 @@ const Profile: React.FC<PropsType> = (
                     </TouchableOpacity>
                 </View>
             </View>
+            {bio ?
+                <Text>
+                    {bio}
+                </Text>
+                :
+                null
+            }
             {isOwnPage ?
                 <View>
                     <TouchableOpacity style={styles.editProfile} onPress={() => navigation.navigate('EditProfile')}>
